@@ -11,12 +11,18 @@ class User {
   /** Register new user. Returns
    *    {username, password, first_name, last_name, phone}
    */
+  //TODO: reformat sql and update DOCSTRINGS document or decide on errors
 
   static async register({ username, password, first_name, last_name, phone }) {
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
     const result = await db.query(
-      `INSERT INTO users (username, password, first_name,last_name,phone,join_at,
-        last_login_at)
+      `INSERT INTO users (username,
+                          password,
+                          first_name,
+                          last_name,
+                          phone,
+                          join_at,
+                          last_login_at)
       VALUES
       ($1, $2,$3,$4,$5,current_timestamp,current_timestamp)
       RETURNING username,password,first_name,last_name,phone`,
@@ -30,14 +36,11 @@ class User {
   static async authenticate(username, password) {
     const result = await db.query(
       `SELECT password
-      FROM users
-      WHERE username = $1`,
+        FROM users
+        WHERE username = $1`,
       [username]
     );
     const user = result.rows[0];
-    if (!user) {
-      throw new NotFoundError();
-    }
     if (user) {
       if ((await bcrypt.compare(password, user.password)) === true) {
         return true;
@@ -51,22 +54,23 @@ class User {
   static async updateLoginTimestamp(username) {
     const result = await db.query(
       `UPDATE users
-      SET last_login_at = current_timestamp
-    WHERE username = $1
-    RETURNING last_login_at`,
+            SET last_login_at = current_timestamp
+              WHERE username = $1
+              RETURNING last_login_at`,
       [username]
     );
-    const time = result.rows[0];
-
-    return time;
   }
 
   /** All: basic info on all users:
    * [{username, first_name, last_name}, ...] */
 
   static async all() {
-    const result = await db.query(`SELECT username, first_name,last_name
-     FROM users`);
+    const result = await db.query(
+      `SELECT username,
+              first_name,
+              last_name
+          FROM users`
+    );
     const users = result.rows;
     return users;
   }
@@ -82,10 +86,14 @@ class User {
 
   static async get(username) {
     const result = await db.query(
-      `SELECT username, first_name,last_name,phone, join_at,
-      last_login_at
-     FROM users
-     WHERE username = $1`,
+      `SELECT username,
+                first_name,
+                last_name,
+                phone,
+                join_at,
+                last_login_at
+            FROM users
+            WHERE username = $1`,
       [username]
     );
     const user = result.rows[0];
@@ -101,27 +109,28 @@ class User {
    *
    * where to_user is
    *   {username, first_name, last_name, phone}
+   * returns an empty array when there is no messages.
    */
 
   static async messagesFrom(username) {
     const result = await db.query(
-      `SELECT id, to_username, body, sent_at, read_at,
-      t.first_name AS to_first_name,
-      t.last_name AS to_last_name,
-      t.phone AS to_phone
-      FROM messages
-      JOIN users AS t ON to_username = t.username
-      JOIN users AS f ON from_username = f.username
-      WHERE from_username = $1
-      `,
+      `SELECT id,
+                to_username,
+                body,
+                sent_at,
+                read_at,
+                t.first_name AS to_first_name,
+                t.last_name AS to_last_name,
+                t.phone AS to_phone
+            FROM messages
+              JOIN users AS t ON to_username = t.username
+              JOIN users AS f ON from_username = f.username
+            WHERE from_username = $1`,
       [username]
     );
 
-    const message = result.rows;
-    if (!message) {
-      throw new NotFoundError();
-    }
-    const users = message.map((m) => ({
+    const messages = result.rows;
+    const users = messages.map((m) => ({
       id: m.id,
       to_user: {
         username: m.to_username,
@@ -143,26 +152,27 @@ class User {
    *
    * where from_user is
    *   {username, first_name, last_name, phone}
+   * returns an empty array when there is no messages.
    */
 
   static async messagesTo(username) {
     const result = await db.query(
-      `SELECT id, from_username, body, sent_at, read_at,
-      f.first_name AS from_first_name,
-      f.last_name AS from_last_name,
-      f.phone AS from_phone
-      FROM messages
-      JOIN users AS t ON to_username = t.username
-      JOIN users AS f ON from_username = f.username
-      WHERE to_username = $1
-      `,
+      `SELECT id,
+                from_username,
+                body,
+                sent_at,
+                read_at,
+                f.first_name AS from_first_name,
+                f.last_name AS from_last_name,
+                f.phone AS from_phone
+            FROM messages
+              JOIN users AS t ON to_username = t.username
+              JOIN users AS f ON from_username = f.username
+            WHERE to_username = $1`,
       [username]
     );
 
     const message = result.rows;
-    if (!message) {
-      throw new NotFoundError();
-    }
     const users = message.map((m) => ({
       id: m.id,
       from_user: {
