@@ -1,22 +1,32 @@
 {
   "name": "messagely",
   "version": "1.1.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest -i"
+    "test": "jest -i",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "*",
+    "bcrypt": "^5.0.1",
     "body-parser": "*",
     "cors": "*",
     "dotenv": "*",
-    "express": "^5.0.0-alpha.8",
+    "express": "^5.0.0-beta.1",
     "express-cors": "*",
     "jsonwebtoken": "*",
     "pg": "*",
     "supertest": "*"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LaithLou/express-messagly.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/LaithLou/express-messagly/issues"
+  },
+  "homepage": "https://github.com/LaithLou/express-messagly#readme",
+  "description": ""
 }
