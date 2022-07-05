@@ -1,5 +1,11 @@
 "use strict";
 
+const {
+  ensureLoggedIn,
+  ensureCorrectUser,
+  ensureCorrectUsers,
+} = require("../middleware/auth");
+const Message = require("../models/message");
 const Router = require("express").Router;
 const router = new Router();
 
@@ -16,6 +22,10 @@ const router = new Router();
  *
  **/
 
+router.get("/:id", ensureCorrectUsers, async function (req, res, next) {
+  const message = await Message.get(req.params.id);
+  return res.json({ message });
+});
 
 /** POST / - post message.
  *
@@ -23,15 +33,29 @@ const router = new Router();
  *   {message: {id, from_username, to_username, body, sent_at}}
  *
  **/
-
+//TODO: params => messageData
+router.post("/", ensureLoggedIn, async function (req, res, next) {
+  debugger;
+  const messageData = {
+    from_username: res.locals.user.username,
+    to_username: req.body.to_username,
+    body: req.body.body,
+  };
+  const message = await Message.create(messageData);
+  return res.json({ message });
+});
 
 /** POST/:id/read - mark message as read:
  *
  *  => {message: {id, read_at}}
  *
- * Makes sure that the only the intended recipient can mark as read.
+ * Makes sure that the only intended recipient can mark as read.
  *
  **/
-
+//TODO: condition logic is the user making that request  we can acess res.locals.user.usename
+router.post("/:id/read", ensureCorrectUser, async function (req, res, next) {
+  const message = await Message.markRead(req.params.id);
+  return res.json({ message });
+});
 
 module.exports = router;

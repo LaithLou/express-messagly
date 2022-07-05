@@ -29,7 +29,6 @@ class User {
       RETURNING username,password,first_name,last_name,phone`,
       [username, hashedPassword, first_name, last_name, phone]
     );
-    debugger;
     const user = result.rows[0];
     return user;
   }
@@ -131,8 +130,8 @@ class User {
       [username]
     );
 
-    const messages = result.rows;
-    const users = messages.map((m) => ({
+    let messages = result.rows;
+    messages = messages.map((m) => ({
       id: m.id,
       to_user: {
         username: m.to_username,
@@ -145,7 +144,7 @@ class User {
       read_at: m.read_at,
     }));
 
-    return users;
+    return messages;
   }
 
   /** Return messages to this user.
@@ -174,8 +173,8 @@ class User {
       [username]
     );
 
-    const message = result.rows;
-    const users = message.map((m) => ({
+    let messages = result.rows;
+    messages = messages.map((m) => ({
       id: m.id,
       from_user: {
         username: m.from_username,
@@ -188,7 +187,7 @@ class User {
       read_at: m.read_at,
     }));
 
-    return users;
+    return messages;
   }
 }
 
